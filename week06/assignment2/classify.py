@@ -1,5 +1,6 @@
 # classify.py — 강의노트 3.3절 classify_review (3중 방어) + 실패 추적
 import json
+import re
 
 from mock_llm import mock_llm_call
 
@@ -8,14 +9,19 @@ SYSTEM = """당신은 고객 리뷰 분류기입니다. 반드시 아래 JSON �
 
 VALID_CATEGORIES = ["배송", "품질", "가격", "환불", "서비스", "기타"]
 
+# (도전 과제) 응답 안에서 첫 '{'부터 마지막 '}'까지를 찾아낸다
+JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 
-def classify_review(review_text, trace=None, verbose=False):
+
+def classify_review(review_text, trace=None, verbose=False, rescue=False):
     """리뷰 1건을 분류하여 딕셔너리로 반환. 실패 시 None.
 
     trace(dict)를 넘기면 집계용 정보를 채운다.
       - malformed : mock이 주입한 불량 유형 (None / codefence / chatter / truncated)
-      - fixed_by  : 불량 응답을 살려낸 방어 이름 (None / "defense1")
+      - fixed_by  : 불량 응답을 살려낸 방어 이름 (None / "defense1" / "regex")
       - fail      : 실패 사유 (None / "parse_error" / "invalid_category")
+
+    rescue=True이면 방어 2에서 파싱이 실패했을 때 정규식으로 {...} 부분만 꺼내 한 번 더 파싱한다.
     """
     if trace is None:
         trace = {}
@@ -35,6 +41,10 @@ def classify_review(review_text, trace=None, verbose=False):
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
+        data = _rescue_json(raw) if rescue else None
+        if data is not None:
+            trace["fixed_by"] = "regex"
+    if data is None:
         if verbose:
             print(f"[경고] JSON 파싱 실패: {raw[:50]}...")
         trace["fixed_by"] = None
@@ -42,8 +52,24 @@ def classify_review(review_text, trace=None, verbose=False):
         return None
 
     # 방어 3: 필드 존재와 값의 유효성 검증
-    if data.get("category") not in VALID_CATEGORIES:
+    if not isinstance(data, dict) or data.get("category") not in VALID_CATEGORIES:
         trace["fixed_by"] = None
         trace["fail"] = "invalid_category"
         return None
     return data
+
+
+def _rescue_json(raw):
+    """(도전 과제) 사족 사이에 묻힌 JSON 객체를 정규식으로 골라내 파싱한다.
+
+    - 사족형: '물론입니다! ... {"category": ...}' → { } 구간이 온전히 있으므로 복구된다.
+    - 잘린 JSON형: '{"category": "배송", "sentim' → 닫는 '}'가 없어 정규식이 아예 매치되지 않고,
+      설령 매치되더라도 빠진 키·값은 원문 어디에도 없으므로 복구할 수 없다.
+    """
+    match = JSON_BLOCK.search(raw)
+    if match is None:
+        return None
+    try:
+        return json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return None
