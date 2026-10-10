@@ -1,19 +1,19 @@
 # AI·데이터 보안 체크리스트 (첨부 1호 · 5주차 강의노트 3.6절)
 
-대상 제출물: 6주차 과제 1 (`week06/assignment1/`)
-※ 과제 2·3을 진행하면서 해당 행의 근거를 추가로 갱신한다.
+대상 제출물: 6주차 과제 1 (`week06/assignment1/`), 과제 2 (`week06/assignment2/`)
+※ 과제 3(팀)은 팀 저장소에서 따로 점검한다.
 
 | 구분 | 번호 | 점검 항목 | 확인 | 근거·비고 |
 |---|---|---|---|---|
-| 데이터 | S1 | 제출물에 실존 인물의 실명·전화번호·이메일 등 PII가 포함되지 않았다 (더미 데이터 사용) | ☑ | 테스트 입력 5건은 직접 작성한 가상 문의이며 실명·연락처·주소·주문번호가 없다 ([report.md 2장](assignment1/report.md)). 캡처 21장에도 계정 이메일·프로필 이름이 나오지 않는다. |
-| 데이터 | S2 | 외부 AI(챗봇·API)에 기업 기밀·타인 코드·PII를 입력하지 않았다 | ☑ | ChatGPT에는 프롬프트와 가상 테스트 문장만 입력했다. Claude에는 교육용 배포 파일(`inquiries_labeled.csv`, 6주차 강의노트 PDF), 본인 캡처, 5주차 본인 제출물만 넘겼다. 5주차 `.env`는 열거나 넘기지 않았다. |
+| 데이터 | S1 | 제출물에 실존 인물의 실명·전화번호·이메일 등 PII가 포함되지 않았다 (더미 데이터 사용) | ☑ | 과제 1: 테스트 입력 5건은 직접 작성한 가상 문의이며 실명·연락처·주소·주문번호가 없다 ([report.md 2장](assignment1/report.md)). 캡처 21장에도 계정 이메일·프로필 이름이 나오지 않는다. 과제 2: `reviews_sample.csv`는 리뷰 문장·평점·날짜만 있고 PII 열이 없다. |
+| 데이터 | S2 | 외부 AI(챗봇·API)에 기업 기밀·타인 코드·PII를 입력하지 않았다 | ☑ | ChatGPT에는 프롬프트와 가상 테스트 문장만 입력했다. Claude에는 교육용 배포 파일(`inquiries_labeled.csv`, 6주차 강의노트 PDF), 본인 캡처, 5주차 본인 제출물만 넘겼다. 5주차 `.env`는 열거나 넘기지 않았다. 과제 2에서는 수업 배포 코드(`mock_llm.py`, `Week62.py`)와 `reviews_sample.csv`만 넘겼다. |
 | 데이터 | S3 | 외부 데이터 사용 시 출처·라이선스를 확인하고 PII 열을 비식별 처리했다 | ☑ (해당 없음) | 외부 데이터 미사용. Few-shot 예시 5개는 수업 배포 견본(`inquiries_labeled.csv` Q05·Q07·Q11·Q16·Q20)에서 가져왔고 PII 열이 없다. |
-| 키 관리 | S4 | API 키·비밀번호가 소스코드에 하드코딩되어 있지 않다 | ☑ (해당 없음) | 과제 1은 무료 웹 UI로 실행해 API 키를 쓰지 않았다. `format_check.py`는 로컬 파일만 읽는다. |
-| 키 관리 | S5 | `.env` 파일이 `.gitignore`에 등록되어 있고, `git ls-files` 확인 결과 추적되지 않는다 | ☑ (해당 없음) | 과제 1에는 `.env`가 없다. 과제 2에서 실제 API를 쓰게 되면 5주차와 같은 `.gitignore` 규칙(`.env`, `.env.*`, `!.env.example`)을 적용한다. |
+| 키 관리 | S4 | API 키·비밀번호가 소스코드에 하드코딩되어 있지 않다 | ☑ (해당 없음) | 과제 1은 무료 웹 UI, 과제 2는 모의 LLM(`mock_llm_call`)만 사용해 API 키가 없다. |
+| 키 관리 | S5 | `.env` 파일이 `.gitignore`에 등록되어 있고, `git ls-files` 확인 결과 추적되지 않는다 | ☑ (해당 없음) | 과제 1·2 모두 `.env`가 없다. 13주차에 실제 API로 교체할 때 5주차와 같은 `.gitignore` 규칙(`.env`, `.env.*`, `!.env.example`)을 적용한다. |
 | 키 관리 | S6 | 커밋 히스토리에 키가 노출된 적이 없다 (노출 시 폐기·재발급 완료를 명기) | ☑ | 6주차 저장소에 키를 커밋한 적이 없다. |
 | 키 관리 | S7 | 키·비밀값을 print/log/스크린샷으로 전체 출력하지 않았다 | ☑ | 캡처는 ChatGPT 대화 화면만 담았고 키·비밀값이 없다. |
-| AI 사용 | S8 | AI 사용 내역(프롬프트·채택·수정)을 과제 규정에 따라 기록·첨부했다 | ☑ | [report.md 8장 AI 사용 기록](assignment1/report.md) |
-| AI 사용 | S9 | (LLM 기능 포함 시) 사용자 입력 검증과 출력 검증(형식 확인)을 적용했다 | ☑ | 21개 출력 전부를 `json.loads()`로 형식 검증했다 ([format_check.py](assignment1/format_check.py)). CoT는 약속한 마지막 줄만 파싱하도록 규칙을 정했다. |
-| AI 사용 | S10 | (LLM 기능 포함 시) 시스템 프롬프트에 비밀 정보를 포함하지 않았다 | ☑ | 프롬프트 3종에는 역할·분류 기준·출력 형식만 있고 비밀 정보가 없다 ([prompts.txt](assignment1/prompts.txt)). |
+| AI 사용 | S8 | AI 사용 내역(프롬프트·채택·수정)을 과제 규정에 따라 기록·첨부했다 | ☑ | [과제 1 report.md 8장](assignment1/report.md), [과제 2 README.md AI 사용 기록](assignment2/README.md) |
+| AI 사용 | S9 | (LLM 기능 포함 시) 사용자 입력 검증과 출력 검증(형식 확인)을 적용했다 | ☑ | 과제 1: 21개 출력 전부를 `json.loads()`로 형식 검증 ([format_check.py](assignment1/format_check.py)). 과제 2: `classify_review`의 3중 방어(코드펜스 제거 → `json.loads` 예외 처리 → 카테고리 허용 목록 검증)와 실패 건수 집계 ([classify.py](assignment2/classify.py)). |
+| AI 사용 | S10 | (LLM 기능 포함 시) 시스템 프롬프트에 비밀 정보를 포함하지 않았다 | ☑ | 과제 1 프롬프트 3종과 과제 2 `SYSTEM` 프롬프트에는 역할·분류 기준·출력 형식만 있다. |
 
 참고: 5주차 체크리스트 원본 — https://github.com/chm2333-png/ai-week5-security/blob/main/SECURITY_CHECKLIST.md
